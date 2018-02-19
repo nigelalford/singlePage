@@ -1,0 +1,1 @@
+This project is currently publishing from the 'docs' folder.
