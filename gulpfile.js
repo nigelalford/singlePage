@@ -131,6 +131,7 @@ gulp.task('watch', ['connect'], function() {
 });
 
 gulp.task('build', ['jshint', 'html', 'images', 'extras', 'styles'], function() {
+  //add a task to update the dist folder with CNAME to simplify the publish process
   return gulp.src('dist/**/*').pipe($.size({
     title: 'build',
     gzip: true
