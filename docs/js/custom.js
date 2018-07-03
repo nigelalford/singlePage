@@ -59,8 +59,7 @@ $('.navbar-collapse ul li a').click(function() {
 // Waiting for the entire site to load
 
 jQuery(window).load(function() {
-        jQuery("#loaderInner").fadeOut();
-        jQuery("#loader").delay(400).fadeOut("slow");
+    jQuery("#loaderInner #loader").fadeOut();
 });
 
 
