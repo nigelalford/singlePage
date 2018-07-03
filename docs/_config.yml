@@ -1,0 +1,15 @@
+plugins:
+  - jekyll-seo-tag
+title: Nigel Alford's bio
+description: Nigel Alford's single page website and resume
+url: nigelalford.com
+author: Nigel Alford
+twitter:
+  username: alforddesign
+  card: summary
+social:
+  - https://twitter.com/alforddesign
+  - https://github.com/nigelalford
+  - https://www.linkedin.com/in/nigelalford/
+  - http://instagram.com/atlmapper
+
