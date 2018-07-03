@@ -3,6 +3,19 @@
 // generated on 2014-12-19 using generator-gulp-webapp 0.2.0
 var gulp = require("gulp");
 var $ = require("gulp-load-plugins")();
+var lazypipe = require("lazypipe");
+var htmlmin = require('gulp-htmlmin');
+var cssChannel = lazypipe()
+  .pipe($.csso)
+  .pipe(
+    $.replace,
+    "bower_components/bootstrap-sass-official/assets/fonts/bootstrap",
+    "fonts"
+  );
+var assets = $.useref.assets({
+  searchPath: "{app}"
+});
+
 
 gulp.task("styles", function() {
   //$.util.log(util.colors.cyan('Recompiling sass files'));
@@ -32,35 +45,10 @@ gulp.task("jshint", function() {
 });
 
 gulp.task("html", ["styles"], function() {
-  var lazypipe = require("lazypipe");
-  var cssChannel = lazypipe()
-    .pipe($.csso)
-    .pipe(
-      $.replace,
-      "bower_components/bootstrap-sass-official/assets/fonts/bootstrap",
-      "fonts"
-    );
-  var assets = $.useref.assets({
-    searchPath: "{.tmp,app}"
-  });
-
   return gulp
     .src("app/*.html")
-    .pipe(assets)
-    .pipe($.if("*.js", $.uglify()))
-    .pipe($.if("*.css", cssChannel()))
-    .pipe(assets.restore())
-    .pipe($.useref())
-    .pipe(
-      $.if(
-        "*.html",
-        $.minifyHtml({
-          conditionals: true,
-          loose: true
-        })
-      )
-    )
-    .pipe(gulp.dest("dist"));
+    .pipe(htmlmin({collapseWhitespace: true}))
+    .pipe(gulp.dest("dist/"));
 });
 
 gulp.task("images", function() {
