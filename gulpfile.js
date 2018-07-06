@@ -4,24 +4,16 @@
 const gulp = require("gulp");
 const $ = require("gulp-load-plugins")();
 const pump = require('pump');
+const opn = require('opn');
+const serveStatic = require("serve-static");
+const serveIndex = require("serve-index");
+const connect = require("connect")
+const livereload = require("connect-livereload")
 
 gulp.task("styles", () => {
-  //$.util.log(util.colors.cyan('Recompiling sass files'));
-  return gulp
-    .src("app/styles/main.scss")
-    .pipe($.plumber())
-    .pipe(
-      $.rubySass({
-        style: "expanded",
-        precision: 10
-      })
-    )
-    .pipe(
-      $.autoprefixer({
-        browsers: ["last 1 version"]
-      })
-    )
-    .pipe(gulp.dest("app/styles"));
+  $.rubySass('app/styles/main.scss')
+    .on('error', $.rubySass.logError)
+    .pipe(gulp.dest('app/styles'));
 });
 
 gulp.task("jshint", () => {
@@ -31,7 +23,6 @@ gulp.task("jshint", () => {
     .pipe($.jshint.reporter("jshint-stylish"))
     .pipe($.jshint.reporter("fail"));
 });
-
 
 gulp.task('html', function () {
   var lazypipe = require("lazypipe");
@@ -94,9 +85,7 @@ gulp.task("extras", () => {
 
 gulp.task("clean", require("del").bind(null, [".tmp", "dist"]));
 
-gulp.task("connect", ["styles"], () => {
-  var serveStatic = require("serve-static");
-  var serveIndex = require("serve-index");
+gulp.task("connect", ['styles'], () => {
   var app = require("connect")()
     .use(
       require("connect-livereload")({
@@ -126,8 +115,8 @@ gulp.task('compress', () => {
   ]);
 });
 
-gulp.task("serve", ["connect", "watch"], () => {
-  require("opn")("http://localhost:9000");
+gulp.task("serve", ['connect', 'watch'], () => {
+  opn('http://localhost:9000');
 });
 
 // inject bower components
@@ -150,7 +139,7 @@ gulp.task("wiredep", () => {
 });
 
 // watch for changes
-gulp.task("watch", ["connect"], () => {
+gulp.task("watch", ["connect"], () => { //might be okay
   $.livereload.listen();
   gulp
     .watch([
