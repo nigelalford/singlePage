@@ -1,10 +1,11 @@
 /* jshint node:true */
 "use strict";
-// generated on 2014-12-19 using generator-gulp-webapp 0.2.0
-var gulp = require("gulp");
-var $ = require("gulp-load-plugins")();
 
-gulp.task("styles", function() {
+const gulp = require("gulp");
+const $ = require("gulp-load-plugins")();
+const pump = require('pump');
+
+gulp.task("styles", () => {
   //$.util.log(util.colors.cyan('Recompiling sass files'));
   return gulp
     .src("app/styles/main.scss")
@@ -23,7 +24,7 @@ gulp.task("styles", function() {
     .pipe(gulp.dest("app/styles"));
 });
 
-gulp.task("jshint", function() {
+gulp.task("jshint", () => {
   return gulp
     .src("app/scripts/**/*.js")
     .pipe($.jshint())
@@ -31,7 +32,8 @@ gulp.task("jshint", function() {
     .pipe($.jshint.reporter("fail"));
 });
 
-gulp.task("html", ["styles"], function() {
+
+gulp.task('html', function () {
   var lazypipe = require("lazypipe");
   var cssChannel = lazypipe()
     .pipe($.csso)
@@ -44,26 +46,16 @@ gulp.task("html", ["styles"], function() {
     searchPath: "{.tmp,app}"
   });
 
-  return gulp
-    .src("app/*.html")
+  return gulp.src('app/*.html')
     .pipe(assets)
-    .pipe($.if("*.js", $.uglify()))
     .pipe($.if("*.css", cssChannel()))
     .pipe(assets.restore())
     .pipe($.useref())
-    .pipe(
-      $.if(
-        "*.html",
-        $.minifyHtml({
-          conditionals: true,
-          loose: true
-        })
-      )
-    )
-    .pipe(gulp.dest("dist"));
+    .pipe($.htmlmin({ collapseWhitespace: true }))
+    .pipe(gulp.dest('dist'));
 });
 
-gulp.task("images", function() {
+gulp.task("images", () => {
   return gulp
     .src("app/img/**/*")
     .pipe(
@@ -77,7 +69,7 @@ gulp.task("images", function() {
     .pipe(gulp.dest("dist/img"));
 });
 
-gulp.task("fonts", function() {
+gulp.task("fonts", () => {
   return gulp
     .src(require("main-bower-files")().concat("app/fonts/**/*"))
     .pipe($.filter("**/*.{eot,svg,ttf,woff}"))
@@ -85,7 +77,7 @@ gulp.task("fonts", function() {
     .pipe(gulp.dest("dist/fonts"));
 });
 
-gulp.task("extras", function() {
+gulp.task("extras", () => {
   return gulp
     .src(
       [
@@ -102,7 +94,7 @@ gulp.task("extras", function() {
 
 gulp.task("clean", require("del").bind(null, [".tmp", "dist"]));
 
-gulp.task("connect", ["styles"], function() {
+gulp.task("connect", ["styles"], () => {
   var serveStatic = require("serve-static");
   var serveIndex = require("serve-index");
   var app = require("connect")()
@@ -121,17 +113,25 @@ gulp.task("connect", ["styles"], function() {
   require("http")
     .createServer(app)
     .listen(9000)
-    .on("listening", function() {
+    .on("listening", () => {
       console.log("Started connect web server on http://localhost:9000");
     });
 });
 
-gulp.task("serve", ["connect", "watch"], function() {
+gulp.task('compress', () => {
+  pump([
+    gulp.src('app/**/*.js'),
+    $.uglify(),
+    gulp.dest('dist')
+  ]);
+});
+
+gulp.task("serve", ["connect", "watch"], () => {
   require("opn")("http://localhost:9000");
 });
 
 // inject bower components
-gulp.task("wiredep", function() {
+gulp.task("wiredep", () => {
   var wiredep = require("wiredep").stream;
 
   gulp
@@ -150,7 +150,7 @@ gulp.task("wiredep", function() {
 });
 
 // watch for changes
-gulp.task("watch", ["connect"], function() {
+gulp.task("watch", ["connect"], () => {
   $.livereload.listen();
   gulp
     .watch([
@@ -167,8 +167,8 @@ gulp.task("watch", ["connect"], function() {
 
 gulp.task(
   "build",
-  ["jshint", "html", "images", "extras", "styles"],
-  function() {
+  ["jshint", "minify", "compress", "images", "extras", "styles"],
+  () => {
     //add a task to update the dist folder with CNAME to simplify the publish process
     return gulp
       .src("dist/**/*")
@@ -182,6 +182,6 @@ gulp.task(
   }
 );
 
-gulp.task("default", ["clean"], function() {
+gulp.task("default", ["clean"], () => {
   gulp.start("build");
 });
