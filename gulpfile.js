@@ -14,6 +14,10 @@ gulp.task("styles", () => {
   $.rubySass('app/styles/main.scss')
     .on('error', $.rubySass.logError)
     .pipe(gulp.dest('app/styles'));
+
+  return gulp
+    .src('app/styles/*.css')
+    .pipe(gulp.dest('dist/styles'));
 });
 
 gulp.task("jshint", () => {
@@ -48,21 +52,21 @@ gulp.task('html', function () {
 
 gulp.task("images", () => {
   return gulp
-    .src("app/img/**/*")
-    .pipe(
-      $.cache(
-        $.imagemin({
-          progressive: true,
-          interlaced: true
-        })
-      )
-    )
+    .src("app/img/**")
+    // .pipe(
+    //   $.cache( // not sure what's happening here
+    //     $.imagemin({
+    //       progressive: true,
+    //       interlaced: true
+    //     })
+    //   )
+    // )
     .pipe(gulp.dest("dist/img"));
 });
 
 gulp.task("fonts", () => {
   return gulp
-    .src(require("main-bower-files")().concat("app/fonts/**/*"))
+    .src("app/fonts/**")
     .pipe($.filter("**/*.{eot,svg,ttf,woff}"))
     .pipe($.flatten())
     .pipe(gulp.dest("dist/fonts"));
@@ -105,6 +109,14 @@ gulp.task("connect", ['styles'], () => {
     .on("listening", () => {
       console.log("Started connect web server on http://localhost:9000");
     });
+});
+
+gulp.task('minify', () => {
+  pump([
+    gulp.src('app/*.css'),
+    $.uglify(),
+    gulp.dest('dist')
+  ]);
 });
 
 gulp.task('compress', () => {
@@ -156,19 +168,8 @@ gulp.task("watch", ["connect"], () => { //might be okay
 
 gulp.task(
   "build",
-  ["jshint", "minify", "compress", "images", "extras", "styles"],
-  () => {
-    //add a task to update the dist folder with CNAME to simplify the publish process
-    return gulp
-      .src("dist/**/*")
-      .pipe(gulp.dest("./docs"))
-      .pipe(
-        $.size({
-          title: "build",
-          gzip: true
-        })
-      );
-  }
+  ["jshint", "minify", "html", "compress", "images", "extras", "styles", "fonts"],
+  () => { }
 );
 
 gulp.task("default", ["clean"], () => {
